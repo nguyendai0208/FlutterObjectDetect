@@ -1,4 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:developer';
+import 'dart:ui' as DUI;
 
 void main() {
   runApp(const MyApp());
@@ -6,28 +10,12 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
@@ -56,6 +44,29 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  Image? _imageRender;
+  static const platform = MethodChannel("call_native_manager");
+  // static const nativePlatform = BasicMessageChannel<dynamic>(
+  // "call_native_manager", StandardMessageCodec());
+  Future<void> _getObjectDetect() async {
+    // const inputImg = Image(image: AssetImage('assets/image-1.png'));
+    // var data = await rootBundle.load("assets/image-1.png");
+    var data = await rootBundle.load("assets/images/demo-camera.jpg");
+    var img = data.buffer.asUint8List();
+    try {
+      var channelResp = await platform.invokeMethod("detect", {'img': img});
+      var item = Map<String, dynamic>.from(channelResp);
+      // final abc = await platform.invokeMethod("detect");
+      var imageData = item['img'];
+      var image = Image.memory(imageData);
+      setState(() {
+        _imageRender = image;
+      });
+      log("Neo $item");
+    } on PlatformException {
+      log("Neo errr");
+    }
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -66,6 +77,19 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
     });
+  }
+
+  Widget _imageRenderWidget() {
+    if (_imageRender != null) {
+      return Container(
+        width: 150,
+        height: 150,
+        decoration:
+            BoxDecoration(image: DecorationImage(image: _imageRender!.image)),
+      );
+    } else {
+      return Container();
+    }
   }
 
   @override
@@ -113,11 +137,25 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const Image(
-              image: AssetImage('assets/image-1.png'),
-              width: 200,
-              height: 200,
+              // image: AssetImage('assets/image-1.png'),
+              image: AssetImage('assets/images/demo-camera.jpg'),
+              width: 150,
+              height: 150,
             ),
             const Text('222555'),
+            ElevatedButton(
+                child: const Text('Hello'), onPressed: _getObjectDetect),
+
+            // ElevatedButton(
+            //   child: Text('Hello'),
+            //   onPressed: _getObjectDetect(AssetImage('assets/image-1.png')),
+            // )
+            // Image(
+            //   image: DecorationImage(image: _imageRender!s.image),
+            //   width: 150,
+            //   height: 150,
+            // ),
+            _imageRenderWidget(),
           ],
         ),
       ),
