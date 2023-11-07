@@ -68,8 +68,6 @@ flutter:
     - assets/yolov5n.tflite
     - assets/yolov8n-seg.tflite
     - assets/yolov8n.tflite
-    - assets/best_yolov8s_080923_ppp_2.onnx
-    - assets/best_yolov8s_080923_float16.tflite
     - assets/best_yolov8s_080923_float32.tflite
     - assets/classes.txt
 
