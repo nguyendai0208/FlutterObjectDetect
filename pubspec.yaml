@@ -35,6 +35,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   ios_platform_images: ^0.2.3
+  flutter_vision: ^1.1.4
 
 dev_dependencies:
   flutter_test:
@@ -62,6 +63,9 @@ flutter:
     # - assets/images/image-12.png
     - assets/image-1.png
     - assets/images/demo-camera.jpg
+    - assets/best_yolov8s_080923_float32.tflite
+    - assets/labels.txt
+    - assets/classes.txt
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

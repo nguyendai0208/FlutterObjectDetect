@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:developer';
-import 'dart:ui' as DUI;
+
+import 'package:flutter_application_1/src/detect_object.dart';
 
 void main() {
   runApp(const MyApp());
@@ -46,17 +47,50 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   Image? _imageRender;
   static const platform = MethodChannel("call_native_manager");
+  // static const _detectObjectManager = DetectObjectVision();
+  final DetectObjectVision _detectObjectManager = DetectObjectVision();
+
+  @override
+  void initState() {
+    super.initState();
+    _detectObjectManager.loadModel();
+  }
+
   // static const nativePlatform = BasicMessageChannel<dynamic>(
   // "call_native_manager", StandardMessageCodec());
+  // Future<void> _getObjectDetect() async {
+  //   // const inputImg = Image(image: AssetImage('assets/image-1.png'));
+  //   // var data = await rootBundle.load("assets/image-1.png");
+  //   var data = await rootBundle.load("assets/images/demo-camera.jpg");
+  //   var img = data.buffer.asUint8List();
+  //   try {
+  //     var channelResp = await platform.invokeMethod("detect", {'img': img});
+  //     var item = Map<String, dynamic>.from(channelResp);
+  //     // final abc = await platform.invokeMethod("detect");
+  //     var imageData = item['img'];
+  //     var image = Image.memory(imageData);
+  //     setState(() {
+  //       _imageRender = image;
+  //     });
+  //     log("Neo $item");
+  //   } on PlatformException {
+  //     log("Neo errr");
+  //   }
+  // }
   Future<void> _getObjectDetect() async {
     // const inputImg = Image(image: AssetImage('assets/image-1.png'));
     // var data = await rootBundle.load("assets/image-1.png");
     var data = await rootBundle.load("assets/images/demo-camera.jpg");
     var img = data.buffer.asUint8List();
     try {
-      var channelResp = await platform.invokeMethod("detect", {'img': img});
-      var item = Map<String, dynamic>.from(channelResp);
+      // var channelResp = await platform.invokeMethod("detect", {'img': img});
+      // var item = Map<String, dynamic>.from(channelResp);
+      // var channelResp = await _detectObjectManager.detectImage(
+      // bytesList: img, imageHeight: 100, imageWidth: 100);
       // final abc = await platform.invokeMethod("detect");
+      // var item = Map<String, dynamic>.from(channelResp);
+      var item = await _detectObjectManager.detectImage(
+          bytesList: img, imageHeight: 100, imageWidth: 100);
       var imageData = item['img'];
       var image = Image.memory(imageData);
       setState(() {
