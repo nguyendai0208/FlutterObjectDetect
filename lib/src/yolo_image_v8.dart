@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/src/detect_object.dart';
@@ -124,11 +125,15 @@ class _YoloImageV8State extends State<YoloImageV8> {
 
     Color colorPick = const Color.fromARGB(255, 50, 233, 30);
     return yoloResults.map((result) {
+      double widthItem = (result["box"][2] - result["box"][0]) * factorX;
+      double heightItem = (result["box"][3] - result["box"][1]) * factorY;
       return Positioned(
         left: result["box"][0] * factorX,
         top: result["box"][1] * factorY + pady,
-        width: (result["box"][2] - result["box"][0]) * factorX,
-        height: (result["box"][3] - result["box"][1]) * factorY,
+        // width: ((result["box"][2] - result["box"][0]) * factorX),
+        width: widthItem.abs(),
+        // height: (result["box"][3] - result["box"][1]) * factorY,
+        height: heightItem.abs(),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(10.0)),

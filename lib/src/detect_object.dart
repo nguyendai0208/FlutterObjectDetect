@@ -65,11 +65,11 @@ class IosDetectObjectVision implements DetectObjectVision {
     // TODO: implement detectImage
     var img = bytesList;
     try {
-      var channelResp =
-          await _nativeChannel.invokeMethod("detect", {'img': img});
-      var item = List<Map<String, dynamic>>.from(channelResp);
-      // final abc = await platform.invokeMethod("detect");
-      return item;
+      final channelResp = await _nativeChannel
+          .invokeMethod<List<dynamic>>("detect", {'img': img});
+      return channelResp?.isNotEmpty ?? false
+          ? channelResp!.map((e) => Map<String, dynamic>.from(e)).toList()
+          : [];
     } catch (e) {
       rethrow;
     }

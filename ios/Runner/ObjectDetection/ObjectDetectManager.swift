@@ -102,7 +102,7 @@ final class ObjectDetectManager {
             }
             
             // Update the image with drawing bouning boxes
-            let drawdImage = self.drawDetectionsOnImage(currentImage, detections: detections)
+//            let drawdImage = self.drawDetectionsOnImage(currentImage, detections: detections)
             
 //            // Update the table count per object
 //            var detectionWithCounts: [DetectionWithCount] = []
@@ -112,9 +112,33 @@ final class ObjectDetectManager {
 //            }
             
             // emit value
-            self.result?(["data" : objectCount,
-                    "img": drawdImage?.pngData()
-                   ])
+//            self.result?(["data" : objectCount,
+//                    "img": drawdImage?.pngData()
+//                   ])
+            let size = currentImage.size
+            let items = detections.map { item -> [String : Any] in
+                let textRect = CGRect(
+                    x: item.box.origin.x,
+                    y: item.box.origin.y - size.height * 0.04,
+                    width: item.box.width,
+                    height: size.height * 0.1
+                )
+                let left = item.box.origin.x
+                let top = item.box.origin.y
+                let right = left + item.box.width
+                let bottom = top + item.box.height
+                return [
+                    "tag" : item.label ?? "",
+                    "box": [
+                        left,
+                        top,
+                        right,
+                        bottom,
+                        item.confidence
+                    ]
+                ];
+            }
+            self.result?(items)
         }
     }
     
