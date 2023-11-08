@@ -16,7 +16,7 @@ abstract class DetectObjectVision {
   }
 
   Future<void> loadModel();
-  Future<Map<String, dynamic>> detectImage(
+  Future<List<Map<String, dynamic>>> detectImage(
       {required Uint8List bytesList,
       required int imageHeight,
       required int imageWidth});
@@ -38,15 +38,14 @@ class AndroidDetectObjectVision implements DetectObjectVision {
   }
 
   @override
-  Future<Map<String, dynamic>> detectImage(
+  Future<List<Map<String, dynamic>>> detectImage(
       {required Uint8List bytesList,
       required int imageHeight,
-      required int imageWidth}) async {
+      required int imageWidth}) {
     // TODO: implement detectImage
-    var abc = await _vision.yoloOnImage(
+    return _vision.yoloOnImage(
         bytesList: bytesList, imageHeight: imageHeight, imageWidth: imageWidth);
-    var rs = Map.fromEntries(abc.map((e) => MapEntry(e[0].toString(), e[1])));
-    return rs;
+    ;
   }
 }
 
@@ -59,7 +58,7 @@ class IosDetectObjectVision implements DetectObjectVision {
   }
 
   @override
-  Future<Map<String, dynamic>> detectImage(
+  Future<List<Map<String, dynamic>>> detectImage(
       {required Uint8List bytesList,
       required int imageHeight,
       required int imageWidth}) async {
@@ -68,7 +67,7 @@ class IosDetectObjectVision implements DetectObjectVision {
     try {
       var channelResp =
           await _nativeChannel.invokeMethod("detect", {'img': img});
-      var item = Map<String, dynamic>.from(channelResp);
+      var item = List<Map<String, dynamic>>.from(channelResp);
       // final abc = await platform.invokeMethod("detect");
       return item;
     } catch (e) {
