@@ -68,6 +68,7 @@ flutter:
     - assets/best_yolov8s_080923_float32.tflite
     - assets/labels.txt
     - assets/classes.txt
+    - assets/images/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

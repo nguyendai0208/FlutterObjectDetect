@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:core';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_1/src/detect_object.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -92,7 +93,9 @@ class _YoloImageV8State extends State<YoloImageV8> {
 
   yoloOnImage() async {
     yoloResults.clear();
-    Uint8List byte = await imageFile!.readAsBytes();
+    var data = await rootBundle.load("assets/images/demo-camera.jpg");
+    var byte = data.buffer.asUint8List();
+    
     final image = await decodeImageFromList(byte);
     imageHeight = image.height;
     imageWidth = image.width;
