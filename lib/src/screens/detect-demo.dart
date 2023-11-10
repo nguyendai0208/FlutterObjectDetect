@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_application_1/src/controls/button.dart';
 import 'package:flutter_application_1/src/constants/image.dart';
 import 'package:flutter_application_1/src/detect_object.dart';
+import 'package:flutter_application_1/src/models/detect-model.dart';
 import 'package:flutter_application_1/src/widgets/detech-result.dart';
 import 'package:image_picker/image_picker.dart';
 import "package:collection/collection.dart";
@@ -21,8 +22,8 @@ class DetectDemoPage extends StatefulWidget {
 class _DetectDemoPageState extends State<DetectDemoPage> {
   final ImagePicker picker = ImagePicker();
   File? imageFile;
-  List<MapEntry<dynamic, int>> yoloResult = [];
-  List<Map<String, dynamic>> listOriginal = [];
+  List<Map<String, dynamic>> listDetect = [];
+  Map<String, DetectModel> mapDetech = {};
   int imageHeight = 1;
   int imageWidth = 1;
 
@@ -43,6 +44,8 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
       setState(() {
         imageFile = File(file.path);
         isDetect = false;
+        listDetect = [];
+        mapDetech = {};
       });
     }
   }
@@ -58,11 +61,10 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
   }
 
   Future<void> _getObjectDetect() async {
-    yoloResult.clear();
-    List<MapEntry<dynamic, int>> results = [];
-    var data = await rootBundle.load("assets/images/demo-camera.jpg");
-    var img = data.buffer.asUint8List();
-    // Uint8List img = imageFile!.readAsBytesSync();
+    Map<String, DetectModel> mapGroupTag = {};
+    // var data = await rootBundle.load("assets/images/demo-camera.jpg");
+    // var img = data.buffer.asUint8List();
+    Uint8List img = imageFile!.readAsBytesSync();
     var image = await decodeImageFromList(img);
     imageHeight = image.height;
     imageWidth = image.width;
@@ -70,17 +72,15 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
     try {
       final result = await _detectObjectManager.detectImage(
           bytesList: img, imageHeight: image.height, imageWidth: image.width);
+
       if (result.isNotEmpty) {
-        results = groupBy(result, (obj) => obj['tag'])
-            .map((key, value) => MapEntry(key, value.length))
-            .entries
-            .map((e) => MapEntry(e.key, e.value))
-            .toList();
+        mapGroupTag = groupBy(result, (obj) => obj['tag'])
+            .map((key, value) => MapEntry(key as String, DetectModel(category: key, count: value.length, color: Colors.primaries[Random().nextInt(Colors.primaries.length)])));
       }
       setState(() {
-        yoloResult = results;
+        mapDetech = mapGroupTag;
+        listDetect = result;
         isDetect = true;
-        listOriginal = result;
       });
     } on PlatformException {
       print("ERR");
@@ -90,18 +90,12 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
   Widget renderImageDefault(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     if (imageFile != null) {
-      // return Image.file(
-      //   File(imageFile!.path),
-      //   fit: BoxFit.fill,
-      //   height: width,
-      //   width: double.infinity,
-      // );
-      return Image.asset(
-        'assets/images/demo-camera.jpg',
-        // fit: BoxFit.fill,
-        // height: width,
-        // width: double.infinity,
+      return Image.file(
+        File(imageFile!.path),
       );
+      // return Image.asset(
+      //   'assets/images/demo-camera.jpg',
+      // );
     }
     return Image.asset(
       ImageConst.uploadIcon,
@@ -111,7 +105,7 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
   }
 
   List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
-    if (listOriginal.isEmpty) return [];
+    if (listDetect.isEmpty) return [];
 
     double factorX = screen.width / (imageWidth);
     double imgRatio = imageWidth / imageHeight;
@@ -119,13 +113,8 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
     double newHeight = newWidth / imgRatio;
     double factorY = newHeight / (imageHeight);
 
-    var mapColor = groupBy(listOriginal, (obj) => obj['tag']).map((key, value) =>
-        MapEntry(
-            key,
-            Colors.primaries[Random().nextInt(Colors.primaries.length)],));
-
     Color colorPick = const Color.fromARGB(255, 50, 233, 30);
-    return listOriginal.map((result) {
+    return listDetect.map((result) {
       return Positioned(
         left: result["box"][0] * factorX,
         top: result["box"][1] * factorY,
@@ -134,7 +123,7 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-            border: Border.all(color: mapColor[result['tag']]!.shade600, width: 2.0),
+            border: Border.all(color: mapDetech[result['tag']]!.color, width: 2.0),
           ),
           child: Text(
             "",
@@ -204,8 +193,8 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
                 // Text('Success(Total: 7578ms - Model: 3110 ms)')
               ]),
             ),
-            if (yoloResult.isEmpty && isDetect) const Text('Not found data!'),
-            if (yoloResult.isNotEmpty) DetectCategories(categories: yoloResult)
+            if (mapDetech.isEmpty && isDetect) const Text('Not found data!'),
+            if (mapDetech.isNotEmpty) DetectCategories(categories: mapDetech)
           ]),
         ));
   }
