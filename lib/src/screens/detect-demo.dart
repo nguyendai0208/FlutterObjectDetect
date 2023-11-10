@@ -1,11 +1,13 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_application_1/src/controls/button.dart';
 import 'package:flutter_application_1/src/constants/image.dart';
 import 'package:flutter_application_1/src/detect_object.dart';
+import 'package:flutter_application_1/src/widgets/detech-result.dart';
 import 'package:image_picker/image_picker.dart';
 import "package:collection/collection.dart";
 
@@ -20,6 +22,10 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
   final ImagePicker picker = ImagePicker();
   File? imageFile;
   List<MapEntry<dynamic, int>> yoloResult = [];
+  List<Map<String, dynamic>> listOriginal = [];
+  int imageHeight = 1;
+  int imageWidth = 1;
+
   bool isLoaded = false;
   bool isDetect = false;
 
@@ -58,6 +64,8 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
     var img = data.buffer.asUint8List();
     // Uint8List img = imageFile!.readAsBytesSync();
     var image = await decodeImageFromList(img);
+    imageHeight = image.height;
+    imageWidth = image.width;
 
     try {
       final result = await _detectObjectManager.detectImage(
@@ -72,6 +80,7 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
       setState(() {
         yoloResult = results;
         isDetect = true;
+        listOriginal = result;
       });
     } on PlatformException {
       print("ERR");
@@ -81,11 +90,17 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
   Widget renderImageDefault(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     if (imageFile != null) {
-      return Image.file(
-        File(imageFile!.path),
-        fit: BoxFit.fill,
-        height: width,
-        width: double.infinity,
+      // return Image.file(
+      //   File(imageFile!.path),
+      //   fit: BoxFit.fill,
+      //   height: width,
+      //   width: double.infinity,
+      // );
+      return Image.asset(
+        'assets/images/demo-camera.jpg',
+        // fit: BoxFit.fill,
+        // height: width,
+        // width: double.infinity,
       );
     }
     return Image.asset(
@@ -95,8 +110,48 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
     );
   }
 
+  List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
+    if (listOriginal.isEmpty) return [];
+
+    double factorX = screen.width / (imageWidth);
+    double imgRatio = imageWidth / imageHeight;
+    double newWidth = imageWidth * factorX;
+    double newHeight = newWidth / imgRatio;
+    double factorY = newHeight / (imageHeight);
+
+    var mapColor = groupBy(listOriginal, (obj) => obj['tag']).map((key, value) =>
+        MapEntry(
+            key,
+            Colors.primaries[Random().nextInt(Colors.primaries.length)],));
+
+    Color colorPick = const Color.fromARGB(255, 50, 233, 30);
+    return listOriginal.map((result) {
+      return Positioned(
+        left: result["box"][0] * factorX,
+        top: result["box"][1] * factorY,
+        width: (result["box"][2] - result["box"][0]) * factorX,
+        height: (result["box"][3] - result["box"][1]) * factorY,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+            border: Border.all(color: mapColor[result['tag']]!.shade600, width: 2.0),
+          ),
+          child: Text(
+            "",
+            style: TextStyle(
+              background: Paint()..color = colorPick,
+              color: Colors.white,
+              fontSize: 18.0,
+            ),
+          ),
+        ),
+      );
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final Size size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).cardTheme.color,
@@ -104,7 +159,12 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
         ),
         body: SingleChildScrollView(
           child: Column(children: [
-            renderImageDefault(context),
+            Stack(
+              children: [
+                renderImageDefault(context),
+                ...displayBoxesAroundRecognizedObjects(size),
+              ],
+            ),
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(children: [
@@ -131,7 +191,9 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
                   text: 'Perform Object Detecttion',
                   minimumSize: const Size.fromHeight(50),
                   radius: 20,
-                  background: !isDetect ? Colors.blue : Colors.grey,
+                  background: imageFile != null && !isDetect
+                      ? Colors.blue
+                      : Colors.grey,
                   onPress: () => {
                     if (imageFile != null && !isDetect) {_getObjectDetect()}
                   },
@@ -142,45 +204,8 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
                 // Text('Success(Total: 7578ms - Model: 3110 ms)')
               ]),
             ),
-            if (yoloResult.isEmpty && isDetect)
-            const Text('Not found data!'),
-            if (yoloResult.isNotEmpty)
-              DataTable(
-                  columns: const <DataColumn>[
-                    DataColumn(
-                      label: Expanded(
-                        child: Text(
-                          '#',
-                          style: TextStyle(fontStyle: FontStyle.italic),
-                        ),
-                      ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Text(
-                          'Category',
-                          style: TextStyle(fontStyle: FontStyle.italic),
-                        ),
-                      ),
-                    ),
-                    DataColumn(
-                      label: Expanded(
-                        child: Text(
-                          'Count',
-                          style: TextStyle(fontStyle: FontStyle.italic),
-                        ),
-                      ),
-                    ),
-                  ],
-                  rows: yoloResult.mapIndexed((index, e) {
-                    return DataRow(
-                      cells: <DataCell>[
-                        DataCell(Text('$index')),
-                        DataCell(Text('${e.key ?? ''}')),
-                        DataCell(Text('${e.value}')),
-                      ],
-                    );
-                  }).toList())
+            if (yoloResult.isEmpty && isDetect) const Text('Not found data!'),
+            if (yoloResult.isNotEmpty) DetectCategories(categories: yoloResult)
           ]),
         ));
   }
