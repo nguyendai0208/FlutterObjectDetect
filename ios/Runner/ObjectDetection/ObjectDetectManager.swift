@@ -149,8 +149,10 @@ final class ObjectDetectManager {
     }
     
     private func visionSendRequest(image: UIImage){
+        let imgNormal = image.makeFixOrientation()
         guard let request = request else { fatalError() }
-        guard let cgImage = image.cgImage else { return }
+//        guard let cgImage = image.cgImage else { return }
+        guard let cgImage = imgNormal.cgImage else { return }
         let handler = VNImageRequestHandler(cgImage: cgImage)
         try? handler.perform([request])
     }
@@ -200,5 +202,19 @@ extension ObjectDetectManager{
         UIGraphicsEndImageContext()
         
         return newImage
+    }
+}
+extension UIImage {
+    func makeFixOrientation() -> UIImage {
+        if self.imageOrientation == UIImage.Orientation.up {
+            return self
+        }
+
+        UIGraphicsBeginImageContextWithOptions(self.size, false, self.scale)
+        self.draw(in: CGRect(x: 0, y: 0, width: self.size.width, height: self.size.height))
+        let normalizedImage: UIImage = UIGraphicsGetImageFromCurrentImageContext()!
+        UIGraphicsEndImageContext()
+
+        return normalizedImage;
     }
 }
