@@ -149,10 +149,10 @@ final class ObjectDetectManager {
     }
     
     private func visionSendRequest(image: UIImage){
-        let imgNormal = image.makeFixOrientation()
+        // let imgNormal = image.makeFixOrientation()
         guard let request = request else { fatalError() }
-//        guard let cgImage = image.cgImage else { return }
-        guard let cgImage = imgNormal.cgImage else { return }
+       guard let cgImage = image.cgImage else { return }
+        // guard let cgImage = imgNormal.cgImage else { return }
         let handler = VNImageRequestHandler(cgImage: cgImage)
         try? handler.perform([request])
     }

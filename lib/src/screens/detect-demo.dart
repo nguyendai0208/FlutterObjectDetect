@@ -9,6 +9,7 @@ import 'package:flutter_application_1/src/constants/image.dart';
 import 'package:flutter_application_1/src/detect_object.dart';
 import 'package:flutter_application_1/src/models/detect-model.dart';
 import 'package:flutter_application_1/src/widgets/detech-result.dart';
+import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:image_picker/image_picker.dart';
 import "package:collection/collection.dart";
 
@@ -62,9 +63,10 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
 
   Future<void> _getObjectDetect() async {
     Map<String, DetectModel> mapGroupTag = {};
-    // var data = await rootBundle.load("assets/images/demo-camera.jpg");
-    // var img = data.buffer.asUint8List();
-    Uint8List img = imageFile!.readAsBytesSync();
+    File rotatedImage =
+        await FlutterExifRotation.rotateAndSaveImage(path: imageFile!.path);
+    var img = await rotatedImage.readAsBytes();
+    // Uint8List img = imageFile!.readAsBytesSync();
     var image = await decodeImageFromList(img);
     imageHeight = image.height;
     imageWidth = image.width;
@@ -74,8 +76,14 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
           bytesList: img, imageHeight: image.height, imageWidth: image.width);
 
       if (result.isNotEmpty) {
-        mapGroupTag = groupBy(result, (obj) => obj['tag'])
-            .map((key, value) => MapEntry(key as String, DetectModel(category: key, count: value.length, color: Colors.primaries[Random().nextInt(Colors.primaries.length)])));
+        mapGroupTag = groupBy(result, (obj) => obj['tag']).map((key, value) =>
+            MapEntry(
+                key as String,
+                DetectModel(
+                    category: key,
+                    count: value.length,
+                    color: Colors.primaries[
+                        Random().nextInt(Colors.primaries.length)])));
       }
       setState(() {
         mapDetech = mapGroupTag;
@@ -123,7 +131,8 @@ class _DetectDemoPageState extends State<DetectDemoPage> {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-            border: Border.all(color: mapDetech[result['tag']]!.color, width: 2.0),
+            border:
+                Border.all(color: mapDetech[result['tag']]!.color, width: 2.0),
           ),
           child: Text(
             "",

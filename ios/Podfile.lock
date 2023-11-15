@@ -1,5 +1,7 @@
 PODS:
   - Flutter (1.0.0)
+  - flutter_exif_rotation (0.3.0):
+    - Flutter
   - flutter_vision (0.0.1):
     - Flutter
   - image_picker_ios (0.0.1):
@@ -12,6 +14,7 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - flutter_exif_rotation (from `.symlinks/plugins/flutter_exif_rotation/ios`)
   - flutter_vision (from `.symlinks/plugins/flutter_vision/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - ios_platform_images (from `.symlinks/plugins/ios_platform_images/ios`)
@@ -20,6 +23,8 @@ DEPENDENCIES:
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  flutter_exif_rotation:
+    :path: ".symlinks/plugins/flutter_exif_rotation/ios"
   flutter_vision:
     :path: ".symlinks/plugins/flutter_vision/ios"
   image_picker_ios:
@@ -31,6 +36,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  flutter_exif_rotation: de6b54e8bd54a687f28d6397d1a890391de41111
   flutter_vision: 9ec044bccb616363a2dc476bb297c0642bf4b496
   image_picker_ios: 4a8aadfbb6dc30ad5141a2ce3832af9214a705b5
   ios_platform_images: 15d8c72bc0ec1266b8a20e74a24a78c49cb0eb2a
